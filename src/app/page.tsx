@@ -6,6 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const Page = () => {
   return (
@@ -25,7 +30,7 @@ function Lobby() {
   const wasDestroyed = searchParams.get("destroyed") === "true";
   const error = searchParams.get("error");
 
-  const { mutate: createRoom } = useMutation({
+  const { mutate: createRoom, isPending } = useMutation({
     mutationFn: async () => {
       const res = await client.room.create.post();
 
@@ -36,71 +41,67 @@ function Lobby() {
   });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4">
+        <ModeToggle />
+      </div>
+      <div className="w-full max-w-md space-y-6">
         {wasDestroyed && (
-          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
-            <p className="text-red-500 text-sm font-bold">ROOM DESTROYED</p>
-            <p className="text-zinc-500 text-xs mt-1">
+          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+            <AlertCircle className="size-4" />
+            <AlertTitle className="font-bold">ROOM DESTROYED</AlertTitle>
+            <AlertDescription>
               All messages were permanently deleted.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
         {error === "room-not-found" && (
-          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
-            <p className="text-red-500 text-sm font-bold">ROOM NOT FOUND</p>
-            <p className="text-zinc-500 text-xs mt-1">
+          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+            <AlertCircle className="size-4" />
+            <AlertTitle className="font-bold">ROOM NOT FOUND</AlertTitle>
+            <AlertDescription>
               This room may have expired or never existed.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
         {error === "room-full" && (
-          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
-            <p className="text-red-500 text-sm font-bold">ROOM FULL</p>
-            <p className="text-zinc-500 text-xs mt-1">
+          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+            <AlertCircle className="size-4" />
+            <AlertTitle className="font-bold">ROOM FULL</AlertTitle>
+            <AlertDescription>
               This room is at maximum capacity.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
 
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-green-500">
-            {">"}private_chat
-          </h1>
-          <p className="text-zinc-500 text-sm">
-            A private, self-destructing chat room.
-          </p>
-        </div>
+        <Card className="border-border bg-card/50 backdrop-blur-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl mb-4 font-bold tracking-tight text-green-500">
+              {">"}private_chat
+            </CardTitle>
+            <CardDescription>
+              A private, self-destructing chat room.
+            </CardDescription>
+          </CardHeader>
 
-        <div className="border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-md">
-          <div className="space-y-5">
+          <CardContent className="space-y-5">
             <div className="space-y-2">
-              <label className="flex items-center text-zinc-300 dark:text-zinc-500">
-                Your Identity
-              </label>
-
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 border border-zinc-800 p-3 text-sm dark:text-zinc-400 font-mono">
-                  {username}
-                </div>
+              <Label className="text-muted-foreground">Your Identity:</Label>
+              <div className="bg-muted/50 border border-border p-3 text-sm text-muted-foreground font-mono rounded-md">
+                {username}
               </div>
             </div>
 
-            <button
-              onClick={() => createRoom()}
-              className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50"
-            >
-              CREATE SECURE ROOM
-            </button>
             <Button
-              variant="default" // "ghost", "link", "outline", "secondary", "destructive"
-              className="w-full text-zinc-500 text-xs hover:text-zinc-400"
               onClick={() => createRoom()}
+              disabled={isPending}
+              size="lg"
+              className="w-full font-bold"
             >
-              CREATE SECURE ROOM
+              {isPending ? "CREATING..." : "CREATE SECURE ROOM"}
             </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
