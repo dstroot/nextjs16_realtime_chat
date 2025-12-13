@@ -1,6 +1,6 @@
 "use client";
 
-import { useUsername } from "@/hooks/use-username";
+// import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+// import { Label } from "@/components/ui/label";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ErrorAlert } from "@/components/error-alert";
 import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
@@ -30,7 +30,7 @@ const Page = () => {
 export default Page;
 
 function Lobby() {
-  const { username } = useUsername();
+  // const { username } = useUsername();
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -75,12 +75,12 @@ function Lobby() {
           </CardHeader>
 
           <CardContent className="space-y-5">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label className="text-muted-foreground">Your Identity:</Label>
               <div className="bg-muted/50 border border-border p-3 text-sm text-muted-foreground font-mono rounded-md">
                 {username}
               </div>
-            </div>
+            </div> */}
 
             <Button
               onClick={() => createRoom()}

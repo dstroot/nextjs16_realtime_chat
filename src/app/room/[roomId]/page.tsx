@@ -9,7 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Copy, Check, Bomb } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatMessage } from "@/components/chat-message";
@@ -115,9 +115,9 @@ const Page = () => {
   }, []);
 
   return (
-    <main className="flex flex-col h-screen max-h-screen overflow-hidden">
+    <main className="flex flex-col h-screen max-h-screen">
       {/* Header */}
-      <header className="border-b border-border p-4 flex items-center justify-between bg-card/30">
+      <header className="border-b border-border p-4 flex items-center justify-between bg-card/50">
         <div className="flex items-center gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -159,7 +159,9 @@ const Page = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <ModeToggle />
+          <div className="hidden md:block">
+            <ModeToggle />
+          </div>
           <Button
             variant="destructive"
             size="default"
@@ -168,13 +170,13 @@ const Page = () => {
             className="font-bold"
           >
             <Bomb className="size-4" />
-            {isDestroying ? "DESTROYING..." : "DESTROY ROOM NOW"}
+            {isDestroying ? "DESTROYING..." : "DESTROY ROOM"}
           </Button>
         </div>
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 h-2/3 overflow-hidden">
         <div className="p-4 space-y-4">
           {messages?.messages.length === 0 && (
             <div className="flex items-center justify-center h-[calc(100vh-200px)]">
@@ -195,10 +197,11 @@ const Page = () => {
             />
           ))}
         </div>
+        <ScrollBar />
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t border-border bg-card/30">
+      <div className="p-4 border-t border-border bg-card/50">
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 animate-pulse font-mono">
