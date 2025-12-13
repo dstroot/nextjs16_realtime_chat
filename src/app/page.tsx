@@ -47,7 +47,7 @@ function Lobby() {
       </div>
       <div className="w-full max-w-md space-y-6">
         {wasDestroyed && (
-          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
             <AlertCircle className="size-4" />
             <AlertTitle className="font-bold">ROOM DESTROYED</AlertTitle>
             <AlertDescription>
@@ -56,7 +56,7 @@ function Lobby() {
           </Alert>
         )}
         {error === "room-not-found" && (
-          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
             <AlertCircle className="size-4" />
             <AlertTitle className="font-bold">ROOM NOT FOUND</AlertTitle>
             <AlertDescription>
@@ -65,7 +65,7 @@ function Lobby() {
           </Alert>
         )}
         {error === "room-full" && (
-          <Alert variant="destructive" className="border-red-900 bg-red-950/50">
+          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
             <AlertCircle className="size-4" />
             <AlertTitle className="font-bold">ROOM FULL</AlertTitle>
             <AlertDescription>
@@ -76,10 +76,10 @@ function Lobby() {
 
         <Card className="border-border bg-card/50 backdrop-blur-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl mb-4 font-bold tracking-tight text-green-500">
+            <CardTitle className="text-3xl mb-2 font-bold tracking-tight text-green-500">
               {">"}private_chat
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="mb-4">
               A private, self-destructing chat room.
             </CardDescription>
           </CardHeader>
