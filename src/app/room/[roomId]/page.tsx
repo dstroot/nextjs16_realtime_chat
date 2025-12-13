@@ -1,80 +1,82 @@
-"use client"
+"use client";
 
-import { useUsername } from "@/hooks/use-username"
-import { useCountdown } from "@/hooks/use-countdown"
-import { client } from "@/lib/client"
-import { useRealtime } from "@/lib/realtime-client"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useParams, useRouter } from "next/navigation"
-import { useCallback, useRef, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Copy, Check, Bomb } from "lucide-react"
-import { ModeToggle } from "@/components/mode-toggle"
-import { ChatMessage } from "@/components/chat-message"
-import { toast } from "sonner"
+import { useUsername } from "@/hooks/use-username";
+import { useCountdown } from "@/hooks/use-countdown";
+import { client } from "@/lib/client";
+import { useRealtime } from "@/lib/realtime-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Copy, Check, Bomb } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
+import { ChatMessage } from "@/components/chat-message";
+import { toast } from "sonner";
 
 const Page = () => {
-  const params = useParams()
-  const roomId = params.roomId as string
-  const router = useRouter()
+  const params = useParams();
+  const roomId = params.roomId as string;
+  const router = useRouter();
 
-  const { username } = useUsername()
-  const [input, setInput] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { username } = useUsername();
+  const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle")
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
   // Fetch initial TTL
   const { data: ttlData } = useQuery({
     queryKey: ["ttl", roomId],
     queryFn: async () => {
-      const res = await client.room.ttl.get({ query: { roomId } })
-      return res.data
+      const res = await client.room.ttl.get({ query: { roomId } });
+      return res.data;
     },
-  })
+  });
 
   // Countdown hook
   const handleCountdownComplete = useCallback(() => {
-    router.push("/?destroyed=true")
-  }, [router])
+    router.push("/?destroyed=true");
+  }, [router]);
 
   const { formatted: timeFormatted, isUrgent } = useCountdown({
     initialSeconds: ttlData?.ttl ?? null,
     onComplete: handleCountdownComplete,
-  })
+  });
 
   // Fetch messages
   const { data: messages, refetch } = useQuery({
     queryKey: ["messages", roomId],
     queryFn: async () => {
-      const res = await client.messages.get({ query: { roomId } })
-      return res.data
+      const res = await client.messages.get({ query: { roomId } });
+      return res.data;
     },
-  })
+  });
 
   // Send message mutation
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
-      await client.messages.post({ sender: username, text }, { query: { roomId } })
-      setInput("")
+      await client.messages.post(
+        { sender: username, text },
+        { query: { roomId } }
+      );
+      setInput("");
     },
     onError: (error) => {
       toast.error("Failed to send message", {
         description: error.message || "Please try again.",
-      })
+      });
     },
-  })
+  });
 
   // Handle send message
   const handleSendMessage = useCallback(() => {
     if (input.trim()) {
-      sendMessage({ text: input })
-      inputRef.current?.focus()
+      sendMessage({ text: input });
+      inputRef.current?.focus();
     }
-  }, [input, sendMessage])
+  }, [input, sendMessage]);
 
   // Realtime subscription
   useRealtime({
@@ -82,35 +84,35 @@ const Page = () => {
     events: ["chat.message", "chat.destroy"],
     onData: ({ event }) => {
       if (event === "chat.message") {
-        refetch()
+        refetch();
       }
 
       if (event === "chat.destroy") {
-        router.push("/?destroyed=true")
+        router.push("/?destroyed=true");
       }
     },
-  })
+  });
 
   // Destroy room mutation
   const { mutate: destroyRoom, isPending: isDestroying } = useMutation({
     mutationFn: async () => {
-      await client.room.delete(null, { query: { roomId } })
+      await client.room.delete(null, { query: { roomId } });
     },
     onError: (error) => {
       toast.error("Failed to destroy room", {
         description: error.message || "Please try again.",
-      })
+      });
     },
-  })
+  });
 
   // Copy link handler
   const copyLink = useCallback(() => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url)
-    setCopyStatus("copied")
-    toast.success("Link copied to clipboard")
-    setTimeout(() => setCopyStatus("idle"), 2000)
-  }, [])
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    setCopyStatus("copied");
+    // toast.success("Link copied to clipboard");
+    setTimeout(() => setCopyStatus("idle"), 1500);
+  }, []);
 
   return (
     <main className="flex flex-col h-screen max-h-screen overflow-hidden">
@@ -118,9 +120,13 @@ const Page = () => {
       <header className="border-b border-border p-4 flex items-center justify-between bg-card/30">
         <div className="flex items-center gap-4">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Room ID</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">
+              Room ID
+            </span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-green-500 truncate">{roomId.slice(0, 10) + "..."}</span>
+              <span className="font-bold text-green-500 truncate">
+                {roomId.slice(0, 10) + "..."}
+              </span>
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -136,10 +142,12 @@ const Page = () => {
             </div>
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <div className="w-0.5 bg-muted-foreground h-8" />
 
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">Self-Destruct</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">
+              Self-Destruct In
+            </span>
             <span
               className={`text-sm font-bold ${
                 isUrgent ? "text-red-500" : "text-amber-500"
@@ -203,7 +211,7 @@ const Page = () => {
               value={input}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  handleSendMessage()
+                  handleSendMessage();
                 }
               }}
               placeholder="Type message..."
@@ -222,7 +230,7 @@ const Page = () => {
         </div>
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

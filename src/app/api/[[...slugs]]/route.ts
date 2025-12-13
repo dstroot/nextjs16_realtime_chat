@@ -19,6 +19,7 @@ const rooms = new Elysia({ prefix: "/room" })
       createdAt: Date.now(),
     });
 
+    // set TTL for room metadata
     await redis.expire(`meta:${roomId}`, ROOM_TTL_SECONDS);
 
     return { roomId };

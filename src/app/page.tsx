@@ -6,7 +6,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ErrorAlert } from "@/components/error-alert";
@@ -35,6 +41,7 @@ function Lobby() {
     mutationFn: async () => {
       const res = await client.room.create.post();
 
+      // Navigate to the newly created room
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`);
       } else {

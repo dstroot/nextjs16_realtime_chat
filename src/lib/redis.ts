@@ -1,3 +1,4 @@
-import { Redis } from "@upstash/redis"
+import { Redis } from "@upstash/redis";
 
-export const redis = Redis.fromEnv()
+// create a singleton redis client using the UPSTASH_REDIS_URL and UPSTASH_REDIS_TOKEN in environment variables
+export const redis = Redis.fromEnv();
