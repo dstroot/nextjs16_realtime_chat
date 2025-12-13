@@ -1,33 +1,27 @@
-import { nanoid } from "nanoid"
-import { useEffect, useState } from "react"
+import { nanoid } from "nanoid";
+import { useEffect, useState } from "react";
 
-const ANIMALS = ["wolf", "hawk", "bear", "shark"]
-const STORAGE_KEY = "chat_username"
-
-const generateUsername = () => {
-  const word = ANIMALS[Math.floor(Math.random() * ANIMALS.length)]
-  return `anonymous-${word}-${nanoid(5)}`
-}
+const STORAGE_KEY = "chat_username";
 
 export const useUsername = () => {
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const main = () => {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = sessionStorage.getItem(STORAGE_KEY);
 
       if (stored) {
-        setUsername(stored)
-        return
+        setUsername(stored);
+        return;
       }
 
-      const generated = generateUsername()
-      localStorage.setItem(STORAGE_KEY, generated)
-      setUsername(generated)
-    }
+      const generated = nanoid();
+      sessionStorage.setItem(STORAGE_KEY, generated);
+      setUsername(generated);
+    };
 
-    main()
-  }, [])
+    main();
+  }, []);
 
-  return { username }
-}
+  return { username };
+};
