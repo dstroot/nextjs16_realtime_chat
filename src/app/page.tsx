@@ -3,7 +3,7 @@
 import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,6 +32,17 @@ function Lobby() {
   const searchParams = useSearchParams();
   const wasDestroyed = searchParams.get("destroyed") === "true";
   const error = searchParams.get("error") as ErrorCode | null;
+  const [showDestroyed, setShowDestroyed] = useState(wasDestroyed);
+
+  useEffect(() => {
+    if (showDestroyed) {
+      // Clear URL params immediately
+      router.replace("/", { scroll: false });
+      // Auto-dismiss after 2 seconds
+      const timer = setTimeout(() => setShowDestroyed(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showDestroyed, router]);
 
   const {
     mutate: createRoom,
@@ -61,7 +72,7 @@ function Lobby() {
         <ModeToggle />
       </div>
       <div className="w-full max-w-md space-y-6">
-        {wasDestroyed && <ErrorAlert errorCode={ERROR_CODES.ROOM_DESTROYED} />}
+        {showDestroyed && <ErrorAlert errorCode={ERROR_CODES.ROOM_DESTROYED} />}
         {error && <ErrorAlert errorCode={error} />}
 
         <Card className="border-border bg-card/50 backdrop-blur-md">
