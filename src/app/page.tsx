@@ -39,7 +39,7 @@ function Lobby() {
       // Clear URL params immediately
       router.replace("/", { scroll: false });
       // Auto-dismiss after 2 seconds
-      const timer = setTimeout(() => setShowDestroyed(false), 2000);
+      const timer = setTimeout(() => setShowDestroyed(false), 4000);
       return () => clearTimeout(timer);
     }
   }, [showDestroyed, router]);
@@ -96,7 +96,7 @@ function Lobby() {
                 <div role="status" className="inline-block mb-0.5">
                   <svg
                     aria-hidden="true"
-                    className="w-4 h-4 mr-2 animate-spin fill-rose-600"
+                    className="w-4 h-4 mr-2 animate-spin"
                     viewBox="0 0 100 101"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"

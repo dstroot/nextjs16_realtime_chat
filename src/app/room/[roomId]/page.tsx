@@ -181,7 +181,8 @@ const Page = () => {
           {messages?.messages.length === 0 && (
             <div className="flex items-center justify-center h-[calc(100vh-200px)]">
               <p className="text-muted-foreground text-sm font-mono">
-                No messages yet, start the conversation.
+                Click copy link above and share it with someone to start
+                chatting!
               </p>
             </div>
           )}
