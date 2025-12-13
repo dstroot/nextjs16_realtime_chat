@@ -1,29 +1,24 @@
 "use client"
 
 import { useUsername } from "@/hooks/use-username"
+import { useCountdown } from "@/hooks/use-countdown"
 import { client } from "@/lib/client"
 import { useRealtime } from "@/lib/realtime-client"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { format } from "date-fns"
 import { useParams, useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Copy, Check, Bomb } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
-
-function formatTimeRemaining(seconds: number) {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}:${secs.toString().padStart(2, "0")}`
-}
+import { ChatMessage } from "@/components/chat-message"
+import { toast } from "sonner"
 
 const Page = () => {
   const params = useParams()
   const roomId = params.roomId as string
-
   const router = useRouter()
 
   const { username } = useUsername()
@@ -31,8 +26,8 @@ const Page = () => {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle")
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
 
+  // Fetch initial TTL
   const { data: ttlData } = useQuery({
     queryKey: ["ttl", roomId],
     queryFn: async () => {
@@ -41,31 +36,17 @@ const Page = () => {
     },
   })
 
-  useEffect(() => {
-    if (ttlData?.ttl !== undefined) setTimeRemaining(ttlData.ttl)
-  }, [ttlData])
+  // Countdown hook
+  const handleCountdownComplete = useCallback(() => {
+    router.push("/?destroyed=true")
+  }, [router])
 
-  useEffect(() => {
-    if (timeRemaining === null || timeRemaining < 0) return
+  const { formatted: timeFormatted, isUrgent } = useCountdown({
+    initialSeconds: ttlData?.ttl ?? null,
+    onComplete: handleCountdownComplete,
+  })
 
-    if (timeRemaining === 0) {
-      router.push("/?destroyed=true")
-      return
-    }
-
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [timeRemaining, router])
-
+  // Fetch messages
   const { data: messages, refetch } = useQuery({
     queryKey: ["messages", roomId],
     queryFn: async () => {
@@ -74,14 +55,28 @@ const Page = () => {
     },
   })
 
+  // Send message mutation
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
       await client.messages.post({ sender: username, text }, { query: { roomId } })
-
       setInput("")
+    },
+    onError: (error) => {
+      toast.error("Failed to send message", {
+        description: error.message || "Please try again.",
+      })
     },
   })
 
+  // Handle send message
+  const handleSendMessage = useCallback(() => {
+    if (input.trim()) {
+      sendMessage({ text: input })
+      inputRef.current?.focus()
+    }
+  }, [input, sendMessage])
+
+  // Realtime subscription
   useRealtime({
     channels: [roomId],
     events: ["chat.message", "chat.destroy"],
@@ -96,18 +91,26 @@ const Page = () => {
     },
   })
 
+  // Destroy room mutation
   const { mutate: destroyRoom, isPending: isDestroying } = useMutation({
     mutationFn: async () => {
       await client.room.delete(null, { query: { roomId } })
     },
+    onError: (error) => {
+      toast.error("Failed to destroy room", {
+        description: error.message || "Please try again.",
+      })
+    },
   })
 
-  const copyLink = () => {
+  // Copy link handler
+  const copyLink = useCallback(() => {
     const url = window.location.href
     navigator.clipboard.writeText(url)
     setCopyStatus("copied")
+    toast.success("Link copied to clipboard")
     setTimeout(() => setCopyStatus("idle"), 2000)
-  }
+  }, [])
 
   return (
     <main className="flex flex-col h-screen max-h-screen overflow-hidden">
@@ -139,12 +142,10 @@ const Page = () => {
             <span className="text-xs text-muted-foreground uppercase tracking-wide">Self-Destruct</span>
             <span
               className={`text-sm font-bold ${
-                timeRemaining !== null && timeRemaining < 60
-                  ? "text-red-500"
-                  : "text-amber-500"
+                isUrgent ? "text-red-500" : "text-amber-500"
               }`}
             >
-              {timeRemaining !== null ? formatTimeRemaining(timeRemaining) : "--:--"}
+              {timeFormatted}
             </span>
           </div>
         </div>
@@ -176,27 +177,14 @@ const Page = () => {
           )}
 
           {messages?.messages.map((msg) => (
-            <div key={msg.id} className="flex flex-col items-start">
-              <div className="max-w-[80%] group">
-                <div className="flex items-baseline gap-3 mb-1">
-                  <span
-                    className={`text-xs font-bold ${
-                      msg.sender === username ? "text-green-500" : "text-blue-500"
-                    }`}
-                  >
-                    {msg.sender === username ? "YOU" : msg.sender}
-                  </span>
-
-                  <span className="text-[10px] text-muted-foreground">
-                    {format(msg.timestamp, "HH:mm:ss")}
-                  </span>
-                </div>
-
-                <p className="text-sm text-foreground leading-relaxed break-all">
-                  {msg.text}
-                </p>
-              </div>
-            </div>
+            <ChatMessage
+              key={msg.id}
+              id={msg.id}
+              sender={msg.sender}
+              text={msg.text}
+              timestamp={msg.timestamp}
+              currentUsername={username}
+            />
           ))}
         </div>
       </ScrollArea>
@@ -214,9 +202,8 @@ const Page = () => {
               type="text"
               value={input}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && input.trim()) {
-                  sendMessage({ text: input })
-                  inputRef.current?.focus()
+                if (e.key === "Enter") {
+                  handleSendMessage()
                 }
               }}
               placeholder="Type message..."
@@ -226,10 +213,7 @@ const Page = () => {
           </div>
 
           <Button
-            onClick={() => {
-              sendMessage({ text: input })
-              inputRef.current?.focus()
-            }}
+            onClick={handleSendMessage}
             disabled={!input.trim() || isPending}
             className="font-bold"
           >

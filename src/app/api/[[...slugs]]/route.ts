@@ -4,8 +4,11 @@ import { nanoid } from "nanoid";
 import { authMiddleware } from "./auth";
 import { z } from "zod";
 import { Message, realtime } from "@/lib/realtime";
-
-const ROOM_TTL_SECONDS = 60 * 10; // 10 minutes
+import {
+  ROOM_TTL_SECONDS,
+  MESSAGE_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+} from "@/lib/constants";
 
 const rooms = new Elysia({ prefix: "/room" })
   .post("/create", async () => {
@@ -84,8 +87,8 @@ const messages = new Elysia({ prefix: "/messages" })
     {
       query: z.object({ roomId: z.string() }),
       body: z.object({
-        sender: z.string().max(100),
-        text: z.string().max(1000),
+        sender: z.string().max(USERNAME_MAX_LENGTH),
+        text: z.string().max(MESSAGE_MAX_LENGTH),
       }),
     }
   )

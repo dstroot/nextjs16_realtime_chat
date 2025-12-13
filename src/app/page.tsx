@@ -8,9 +8,10 @@ import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { ErrorAlert } from "@/components/error-alert";
+import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
+import { toast } from "sonner";
 
 const Page = () => {
   return (
@@ -28,7 +29,7 @@ function Lobby() {
 
   const searchParams = useSearchParams();
   const wasDestroyed = searchParams.get("destroyed") === "true";
-  const error = searchParams.get("error");
+  const error = searchParams.get("error") as ErrorCode | null;
 
   const { mutate: createRoom, isPending } = useMutation({
     mutationFn: async () => {
@@ -36,7 +37,14 @@ function Lobby() {
 
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`);
+      } else {
+        throw new Error("Failed to create room");
       }
+    },
+    onError: (error) => {
+      toast.error("Failed to create room", {
+        description: error.message || "Please try again later.",
+      });
     },
   });
 
@@ -46,33 +54,8 @@ function Lobby() {
         <ModeToggle />
       </div>
       <div className="w-full max-w-md space-y-6">
-        {wasDestroyed && (
-          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
-            <AlertCircle className="size-4" />
-            <AlertTitle className="font-bold">ROOM DESTROYED</AlertTitle>
-            <AlertDescription>
-              All messages were permanently deleted.
-            </AlertDescription>
-          </Alert>
-        )}
-        {error === "room-not-found" && (
-          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
-            <AlertCircle className="size-4" />
-            <AlertTitle className="font-bold">ROOM NOT FOUND</AlertTitle>
-            <AlertDescription>
-              This room may have expired or never existed.
-            </AlertDescription>
-          </Alert>
-        )}
-        {error === "room-full" && (
-          <Alert variant="destructive" className="dark:border-red-900 border-red-600 bg-red-200/50 dark:bg-red-950/50">
-            <AlertCircle className="size-4" />
-            <AlertTitle className="font-bold">ROOM FULL</AlertTitle>
-            <AlertDescription>
-              This room is at maximum capacity.
-            </AlertDescription>
-          </Alert>
-        )}
+        {wasDestroyed && <ErrorAlert errorCode={ERROR_CODES.ROOM_DESTROYED} />}
+        {error && <ErrorAlert errorCode={error} />}
 
         <Card className="border-border bg-card/50 backdrop-blur-md">
           <CardHeader className="text-center">
