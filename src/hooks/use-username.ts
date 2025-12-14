@@ -8,6 +8,7 @@ export const useUsername = () => {
 
   useEffect(() => {
     const main = () => {
+      // stored in session storage only
       const stored = sessionStorage.getItem(STORAGE_KEY);
 
       if (stored) {
@@ -15,6 +16,7 @@ export const useUsername = () => {
         return;
       }
 
+      // generate a new user name (nanoid)
       const generated = nanoid();
       sessionStorage.setItem(STORAGE_KEY, generated);
       setUsername(generated);

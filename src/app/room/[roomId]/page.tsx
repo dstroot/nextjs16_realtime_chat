@@ -170,7 +170,7 @@ const Page = () => {
             className="font-bold"
           >
             <Bomb className="size-4" />
-            {isDestroying ? "DESTROYING..." : "DESTROY ROOM"}
+            {/* {isDestroying ? "DESTROYING..." : "DESTROY ROOM"} */}
           </Button>
         </div>
       </header>
