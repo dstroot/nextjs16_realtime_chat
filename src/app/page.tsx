@@ -19,7 +19,7 @@ import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
 
 const Page = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <Lobby />
     </Suspense>
   );

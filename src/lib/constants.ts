@@ -7,7 +7,7 @@ export const ROOM_TTL_SECONDS = 60 * 10; // 10 minutes
 export const MAX_USERS_PER_ROOM = 2;
 
 // Message limits
-export const MESSAGE_MAX_LENGTH = 1000;
+export const MESSAGE_MAX_LENGTH = 5000;
 export const USERNAME_MAX_LENGTH = 25;
 
 // Error codes
