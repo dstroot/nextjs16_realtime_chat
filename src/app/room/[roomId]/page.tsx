@@ -3,10 +3,12 @@
 // hooks
 import { useUsername } from "@/hooks/use-username";
 import { useCountdown } from "@/hooks/use-countdown";
+import { useEffect } from "react";
 
 // libs
 import { client } from "@/lib/client";
 import { useRealtime } from "@/lib/realtime-client";
+import { encrypt } from "@/lib/encryption";
 
 // third-party
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -23,14 +25,46 @@ import { ChatMessage } from "@/components/chat-message";
 import { toast } from "sonner";
 
 const Page = () => {
+  // hooks
   const params = useParams();
-  const roomId = params.roomId as string;
   const router = useRouter();
   const { username } = useUsername();
+
+  // params
+  const roomId = params.roomId as string;
+
+  // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // State
   const [input, setInput] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
+
+  // Handle encryption key from URL hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        if (hash.length !== 64) {
+          router.push("/?error=invalid-key");
+        } else {
+          setEncryptionKey(hash);
+        }
+      } else {
+        router.push("/?error=missing-key");
+      }
+    };
+
+    // Initial check
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [router]);
 
   // Fetch initial TTL
   const { data: ttlData } = useQuery({
@@ -64,10 +98,16 @@ const Page = () => {
   // Send message mutation
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
+      // Encrypt message before sending
+      const encrypted = encryptionKey
+        ? await encrypt(text, encryptionKey)
+        : text;
+
       await client.messages.post(
-        { sender: username, text },
+        { sender: username, text: encrypted },
         { query: { roomId } }
       );
+
       setInput("");
     },
     onError: (error) => {
@@ -118,7 +158,7 @@ const Page = () => {
     navigator.clipboard.writeText(url);
     setCopyStatus("copied");
     // toast.success("Link copied to clipboard");
-    setTimeout(() => setCopyStatus("idle"), 1500);
+    setTimeout(() => setCopyStatus("idle"), 2000);
   }, []);
 
   // Auto-scroll to bottom when messages fill scroll area
@@ -195,10 +235,10 @@ const Page = () => {
       <ScrollArea className="flex-1 grow overflow-hidden">
         <div className="p-4 space-y-4">
           {messages?.messages.length === 0 && (
-            <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+            <div className="flex items-center justify-center">
               <p className="text-muted-foreground text-sm font-mono">
-                Click copy link above and share it with someone to start
-                chatting!
+                Click copy link under ROOM ID above and share it with someone to
+                start chatting!
               </p>
             </div>
           )}
@@ -209,6 +249,7 @@ const Page = () => {
               id={msg.id}
               sender={msg.sender}
               text={msg.text}
+              encryptionKey={encryptionKey}
               timestamp={msg.timestamp}
               currentUsername={username}
             />

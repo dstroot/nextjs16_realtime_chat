@@ -18,8 +18,13 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## To Do
 
-- [ ] Add Shadcn
-- [ ] Support light/dark
+- [ ] Use Shadcn UI Components
+- [ ] Support light/dark/system Theme
+- [ ] Change from local storage to session storage (don't want any data saved beyond a session)
+- [ ] Since the username is not actually used in the chat (you appear as "you") we don't need to show it on the landing page.
+- [ ] Username can simply be a nanoid. No need for any extra complexity.
+- [ ] Room destruction messages/Errors now disappear after a delay.
+- [ ] Consolidated constants into a single file in /lib (constants.ts)
 
 
 ## Learn More

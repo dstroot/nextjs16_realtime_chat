@@ -16,6 +16,8 @@ export const ERROR_CODES = {
   ROOM_NOT_FOUND: "room-not-found",
   ROOM_FULL: "room-full",
   ROOM_FAILED: "room-failed",
+  MISSING_KEY: "missing-key",
+  INVALID_KEY: "invalid-key",
 } as const;
 
 // Alert messages configuration
@@ -35,6 +37,14 @@ export const ERROR_ALERTS = {
   [ERROR_CODES.ROOM_FAILED]: {
     title: "ROOM CREATION FAILED",
     description: "Please try again later.",
+  },
+  [ERROR_CODES.MISSING_KEY]: {
+    title: "MISSING ENCRYPTION KEY",
+    description: "The encryption key is missing from the link.",
+  },
+  [ERROR_CODES.INVALID_KEY]: {
+    title: "INVALID ENCRYPTION KEY",
+    description: "The encryption key provided in the URL is invalid.",
   },
 } as const;
 

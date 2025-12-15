@@ -16,6 +16,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ErrorAlert } from "@/components/error-alert";
 import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
+import { generateKey } from "@/lib/encryption";
 
 const Page = () => {
   return (
@@ -30,8 +31,12 @@ export default Page;
 function Lobby() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Error handling/notifications
   const wasDestroyed = searchParams.get("destroyed") === "true";
   const error = searchParams.get("error") as ErrorCode | null;
+
+  // State
   const [showDestroyed, setShowDestroyed] = useState(wasDestroyed);
   const [showError, setError] = useState(error);
 
@@ -61,12 +66,14 @@ function Lobby() {
 
       // Navigate to the newly created room
       if (res.status === 200) {
-        router.push(`/room/${res.data?.roomId}`);
+        // Add a generated encryption key as a URL fragment
+        router.push(`/room/${res.data?.roomId}#${generateKey()}`);
       } else {
         throw new Error("Failed to create room");
       }
     },
     onError: (error) => {
+      // TODO: Handle error (you might want to show an alert instead)
       console.log(error.message || "Please try again later.");
     },
   });
@@ -86,10 +93,10 @@ function Lobby() {
               {">private_chat"}
             </CardTitle>
             <CardDescription className="mb-4">
-              Create a private, self-destructing chat room. Nothing is retained
-              after you leave. No accounts, no logs. No personal identifiable
-              information of any type is ever collected. Rooms self-destruct
-              after 10 minutes.
+              Create a private, self-destructing chat room. Messages are
+              encrypted end-to-end. Nothing is retained after you leave. No
+              accounts, no logs. No personal identifiable information of any
+              type is ever collected. Rooms self-destruct after 10 minutes.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -97,10 +104,10 @@ function Lobby() {
               onClick={() => createRoom()}
               disabled={isPending}
               size="lg"
-              variant="default" // changed from "primary" to "default"
+              variant="default"
               className="w-full font-bold"
             >
-              {isPending ? <Spinner className="mr-1" /> : ""}
+              {isPending && <Spinner className="mr-1" />}
               {isSuccess ? "ROOM CREATED!" : "CREATE SECURE ROOM"}
             </Button>
           </CardContent>
