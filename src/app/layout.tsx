@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { TITLE, DESCRIPTION } from "@/lib/constants";
 
+// Styles
 import "./globals.css";
-
+import { JetBrains_Mono } from "next/font/google";
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
+// SEO and Metadata
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,

@@ -1,296 +1,83 @@
 "use client";
 
+import { useCallback, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+
 // hooks
 import { useUsername } from "@/hooks/use-username";
 import { useCountdown } from "@/hooks/use-countdown";
-import { useEffect } from "react";
-
-// libs
-import { client } from "@/lib/client";
-import { useRealtime } from "@/lib/realtime-client";
-import { encrypt } from "@/lib/encryption";
-
-// third-party
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { Copy, Check, Bomb } from "lucide-react";
+import { useEncryptionKey } from "@/hooks/use-encryption-key";
+import { useTTL } from "@/hooks/use-ttl";
+import { useMessages } from "@/hooks/use-messages";
+import { useRoomDestruction } from "@/hooks/use-room-destruction";
+import { useRoomRealtime } from "@/hooks/use-room-realtime";
 
 // components
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { ModeToggle } from "@/components/mode-toggle";
-import { ChatMessage } from "@/components/chat-message";
-import { toast } from "sonner";
+import { ChatHeader } from "@/components/chat-header";
+import { MessageList } from "@/components/message-list";
+import { ChatInput } from "@/components/chat-input";
 
 const Page = () => {
-  // hooks
   const params = useParams();
   const router = useRouter();
   const { username } = useUsername();
-
-  // params
   const roomId = params.roomId as string;
-
-  // Refs
-  const inputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // State
   const [input, setInput] = useState("");
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
-  const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
 
-  // Handle encryption key from URL hash
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash) {
-        if (hash.length !== 64) {
-          router.push("/?error=invalid-key");
-        } else {
-          setEncryptionKey(hash);
-        }
-      } else {
-        router.push("/?error=missing-key");
-      }
-    };
-
-    // Initial check
-    handleHashChange();
-
-    // Listen for hash changes
-    window.addEventListener("hashchange", handleHashChange);
-
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [router]);
-
-  // Fetch initial TTL
-  const { data: ttlData } = useQuery({
-    queryKey: ["ttl", roomId],
-    queryFn: async () => {
-      const res = await client.room.ttl.get({ query: { roomId } });
-      return res.data;
-    },
-  });
+  // Custom hooks
+  const encryptionKey = useEncryptionKey();
+  const ttlData = useTTL(roomId);
+  const { messages, sendMessage, isPending, refetch } = useMessages(
+    roomId,
+    encryptionKey
+  );
+  const { destroyRoom, isDestroying } = useRoomDestruction(roomId);
 
   // Countdown hook
   const handleCountdownComplete = useCallback(() => {
     router.push("/?destroyed=true");
   }, [router]);
 
-  // Display countdown
   const { formatted: timeFormatted, isUrgent } = useCountdown({
     initialSeconds: ttlData?.ttl ?? null,
     onComplete: handleCountdownComplete,
   });
 
-  // Fetch messages
-  const { data: messages, refetch } = useQuery({
-    queryKey: ["messages", roomId],
-    queryFn: async () => {
-      const res = await client.messages.get({ query: { roomId } });
-      return res.data;
-    },
-  });
-
-  // Send message mutation
-  const { mutate: sendMessage, isPending } = useMutation({
-    mutationFn: async ({ text }: { text: string }) => {
-      // Encrypt message before sending
-      const encrypted = encryptionKey
-        ? await encrypt(text, encryptionKey)
-        : text;
-
-      await client.messages.post(
-        { sender: username, text: encrypted },
-        { query: { roomId } }
-      );
-
-      setInput("");
-    },
-    onError: (error) => {
-      toast.error("Failed to send message", {
-        description: error.message || "Please try again.",
-      });
-    },
-  });
+  // Realtime subscription
+  useRoomRealtime(roomId, refetch);
 
   // Handle send message
   const handleSendMessage = useCallback(() => {
     if (input.trim()) {
       sendMessage({ text: input });
-      inputRef.current?.focus();
+      setInput("");
     }
   }, [input, sendMessage]);
 
-  // Realtime subscription
-  useRealtime({
-    channels: [roomId],
-    events: ["chat.message", "chat.destroy"],
-    onData: ({ event }) => {
-      if (event === "chat.message") {
-        refetch();
-      }
-
-      if (event === "chat.destroy") {
-        router.push("/?destroyed=true");
-      }
-    },
-  });
-
-  // Destroy room mutation
-  const { mutate: destroyRoom, isPending: isDestroying } = useMutation({
-    mutationFn: async () => {
-      await client.room.delete(null, { query: { roomId } });
-    },
-    onError: (error) => {
-      toast.error("Failed to destroy room", {
-        description: error.message || "Please try again.",
-      });
-    },
-  });
-
-  // Copy link handler
-  const copyLink = useCallback(() => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    setCopyStatus("copied");
-    // toast.success("Link copied to clipboard");
-    setTimeout(() => setCopyStatus("idle"), 2000);
-  }, []);
-
-  // Auto-scroll to bottom when messages fill scroll area
-  useLayoutEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   return (
     <main className="flex flex-col h-dvh max-h-dvh">
-      {/* Header */}
-      <header className="border-b border-border p-4 flex items-center justify-between bg-card/50">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">
-              Room ID
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-green-500 truncate">
-                {roomId.slice(0, 10) + "..."}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={copyLink}
-                className="h-6 w-6"
-              >
-                {copyStatus === "copied" ? (
-                  <Check className="size-3 text-green-500" />
-                ) : (
-                  <Copy className="size-3" />
-                )}
-              </Button>
-            </div>
-          </div>
+      <ChatHeader
+        roomId={roomId}
+        timeFormatted={timeFormatted}
+        isUrgent={isUrgent}
+        onDestroyRoom={() => destroyRoom()}
+        isDestroying={isDestroying}
+      />
 
-          <div className="w-0.5 bg-muted-foreground h-8" />
+      <MessageList
+        messages={messages}
+        encryptionKey={encryptionKey}
+        currentUsername={username}
+      />
 
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground uppercase tracking-wide">
-              Self-Destruct In
-            </span>
-            <span
-              className={`text-sm font-bold ${
-                isUrgent ? "text-red-500" : "text-amber-500"
-              }`}
-            >
-              {timeFormatted}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="destructive"
-            size="default"
-            onClick={() => destroyRoom()}
-            disabled={isDestroying}
-            className="font-bold"
-          >
-            <Bomb className="size-4" />
-            {isDestroying ? (
-              <span className="hidden sm:block">DESTROYING...</span>
-            ) : (
-              <span className="hidden sm:block">DESTROY ROOM</span>
-            )}
-          </Button>
-          <div className="hidden sm:block">
-            <ModeToggle />
-          </div>
-        </div>
-      </header>
-
-      {/* Messages */}
-      <ScrollArea className="flex-1 grow overflow-hidden">
-        <div className="p-4 space-y-4">
-          {messages?.messages.length === 0 && (
-            <div className="flex items-center justify-center">
-              <p className="text-muted-foreground text-sm font-mono">
-                Click copy link under ROOM ID above and share it with someone to
-                start chatting!
-              </p>
-            </div>
-          )}
-
-          {messages?.messages.map((msg) => (
-            <ChatMessage
-              key={msg.id}
-              id={msg.id}
-              sender={msg.sender}
-              text={msg.text}
-              encryptionKey={encryptionKey}
-              timestamp={msg.timestamp}
-              currentUsername={username}
-            />
-          ))}
-        </div>
-        <div ref={messagesEndRef} />
-        <ScrollBar />
-      </ScrollArea>
-
-      {/* Input */}
-      <div className="p-4 border-t border-border bg-card/50">
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 animate-pulse font-mono">
-              {">"}
-            </span>
-            <Input
-              ref={inputRef}
-              autoFocus
-              type="text"
-              value={input}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSendMessage();
-                }
-              }}
-              placeholder="Type message..."
-              onChange={(e) => setInput(e.target.value)}
-              className="pl-7 bg-background border-border"
-            />
-          </div>
-
-          <Button
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isPending}
-            className="font-bold"
-          >
-            {isPending ? "SENDING..." : "SEND"}
-          </Button>
-        </div>
-      </div>
+      <ChatInput
+        input={input}
+        onInputChange={setInput}
+        onSendMessage={handleSendMessage}
+        isPending={isPending}
+      />
     </main>
   );
 };

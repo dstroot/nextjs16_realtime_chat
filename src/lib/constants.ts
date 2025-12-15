@@ -10,41 +10,75 @@ export const MAX_USERS_PER_ROOM = 2;
 export const MESSAGE_MAX_LENGTH = 5000;
 export const USERNAME_MAX_LENGTH = 25;
 
-// Error codes
-export const ERROR_CODES = {
-  ROOM_DESTROYED: "destroyed",
-  ROOM_NOT_FOUND: "room-not-found",
-  ROOM_FULL: "room-full",
-  ROOM_FAILED: "room-failed",
-  MISSING_KEY: "missing-key",
-  INVALID_KEY: "invalid-key",
-} as const;
-
-// Alert messages configuration
-export const ERROR_ALERTS = {
-  [ERROR_CODES.ROOM_DESTROYED]: {
+// Error configuration - single source of truth
+export const ERROR_CONFIG = {
+  ROOM_DESTROYED: {
+    code: "destroyed",
     title: "ROOM DESTROYED",
     description: "All messages were permanently deleted.",
   },
-  [ERROR_CODES.ROOM_NOT_FOUND]: {
+  ROOM_NOT_FOUND: {
+    code: "room-not-found",
     title: "ROOM NOT FOUND",
     description: "This room may have expired or never existed.",
   },
-  [ERROR_CODES.ROOM_FULL]: {
+  ROOM_FULL: {
+    code: "room-full",
     title: "ROOM FULL",
     description: "This room is at maximum capacity.",
   },
-  [ERROR_CODES.ROOM_FAILED]: {
+  ROOM_FAILED: {
+    code: "room-failed",
     title: "ROOM CREATION FAILED",
     description: "Please try again later.",
   },
-  [ERROR_CODES.MISSING_KEY]: {
+  MISSING_KEY: {
+    code: "missing-key",
     title: "MISSING ENCRYPTION KEY",
     description: "The encryption key is missing from the link.",
   },
-  [ERROR_CODES.INVALID_KEY]: {
+  INVALID_KEY: {
+    code: "invalid-key",
     title: "INVALID ENCRYPTION KEY",
     description: "The encryption key provided in the URL is invalid.",
+  },
+} as const;
+
+// Derived error codes for backwards compatibility
+export const ERROR_CODES = {
+  ROOM_DESTROYED: ERROR_CONFIG.ROOM_DESTROYED.code,
+  ROOM_NOT_FOUND: ERROR_CONFIG.ROOM_NOT_FOUND.code,
+  ROOM_FULL: ERROR_CONFIG.ROOM_FULL.code,
+  ROOM_FAILED: ERROR_CONFIG.ROOM_FAILED.code,
+  MISSING_KEY: ERROR_CONFIG.MISSING_KEY.code,
+  INVALID_KEY: ERROR_CONFIG.INVALID_KEY.code,
+} as const;
+
+// Derived error alerts for backwards compatibility
+export const ERROR_ALERTS = {
+  [ERROR_CODES.ROOM_DESTROYED]: {
+    title: ERROR_CONFIG.ROOM_DESTROYED.title,
+    description: ERROR_CONFIG.ROOM_DESTROYED.description,
+  },
+  [ERROR_CODES.ROOM_NOT_FOUND]: {
+    title: ERROR_CONFIG.ROOM_NOT_FOUND.title,
+    description: ERROR_CONFIG.ROOM_NOT_FOUND.description,
+  },
+  [ERROR_CODES.ROOM_FULL]: {
+    title: ERROR_CONFIG.ROOM_FULL.title,
+    description: ERROR_CONFIG.ROOM_FULL.description,
+  },
+  [ERROR_CODES.ROOM_FAILED]: {
+    title: ERROR_CONFIG.ROOM_FAILED.title,
+    description: ERROR_CONFIG.ROOM_FAILED.description,
+  },
+  [ERROR_CODES.MISSING_KEY]: {
+    title: ERROR_CONFIG.MISSING_KEY.title,
+    description: ERROR_CONFIG.MISSING_KEY.description,
+  },
+  [ERROR_CODES.INVALID_KEY]: {
+    title: ERROR_CONFIG.INVALID_KEY.title,
+    description: ERROR_CONFIG.INVALID_KEY.description,
   },
 } as const;
 

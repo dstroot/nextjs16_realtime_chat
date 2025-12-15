@@ -1,9 +1,19 @@
 "use client";
 
-import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback } from "react";
+import { toast } from "sonner";
+
+// hooks
+import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
+
+// lib
+import { client } from "@/lib/client";
+import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
+import { generateKey } from "@/lib/encryption";
+
+// components
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,8 +25,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ErrorAlert } from "@/components/error-alert";
-import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
-import { generateKey } from "@/lib/encryption";
 
 const Page = () => {
   return (
@@ -40,21 +48,15 @@ function Lobby() {
   const [showDestroyed, setShowDestroyed] = useState(wasDestroyed);
   const [showError, setError] = useState(error);
 
-  if (showDestroyed) {
-    // Auto-dismiss after 2 seconds
-    setTimeout(() => {
-      setShowDestroyed(false);
-      router.replace("/", { scroll: false });
-    }, 4000);
-  }
-
-  if (showError) {
-    // Auto-dismiss after 2 seconds
-    setTimeout(() => {
-      setError(null);
-      router.replace("/", { scroll: false });
-    }, 4000);
-  }
+  // Auto-dismiss alerts after 4 seconds
+  useAutoDismiss(
+    showDestroyed,
+    useCallback(() => setShowDestroyed(false), [])
+  );
+  useAutoDismiss(
+    !!showError,
+    useCallback(() => setError(null), [])
+  );
 
   const {
     mutate: createRoom,
@@ -73,8 +75,9 @@ function Lobby() {
       }
     },
     onError: (error) => {
-      // TODO: Handle error (you might want to show an alert instead)
-      console.log(error.message || "Please try again later.");
+      toast.error("Failed to create room", {
+        description: error.message || "Please try again later.",
+      });
     },
   });
 

@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { memo } from "react";
-import { decrypt } from "@/lib/encryption";
-import { useQuery } from "@tanstack/react-query";
+import { useDecryptedMessage } from "@/hooks/use-decrypted-message";
 
 interface ChatMessageProps {
   id: string;
@@ -20,38 +19,7 @@ export const ChatMessage = memo(function ChatMessage({
   currentUsername,
 }: ChatMessageProps) {
   const isOwnMessage = sender === currentUsername;
-
-  const DecryptedMessage = ({
-    text,
-    encryptionKey,
-  }: {
-    text: string;
-    encryptionKey: string | null;
-  }) => {
-    // Decrypt the message
-    const { data: decrypted } = useQuery({
-      queryKey: ["decrypted", text, encryptionKey],
-      queryFn: async () => {
-        if (!encryptionKey) return null;
-        return await decrypt(text, encryptionKey);
-      },
-      staleTime: Infinity,
-      retry: false,
-    });
-
-    // Case 1: No key provided
-    if (!encryptionKey) {
-      return "Missing encryption key";
-    }
-
-    // Case 2: Key provided but decryption failed
-    if (decrypted === null && encryptionKey) {
-      return "Decryption Failed";
-    }
-
-    // Case 3: Success
-    return decrypted;
-  };
+  const { message: decryptedMessage } = useDecryptedMessage(text, encryptionKey);
 
   return (
     <div className="flex flex-col items-start">
@@ -71,7 +39,7 @@ export const ChatMessage = memo(function ChatMessage({
         </div>
 
         <p className="text-sm text-foreground leading-relaxed wrap-break-word whitespace-pre-wrap">
-          {DecryptedMessage({ text, encryptionKey })}
+          {decryptedMessage}
         </p>
       </div>
     </div>

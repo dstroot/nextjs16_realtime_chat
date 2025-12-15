@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { redis } from "./lib/redis"
+import { redis, RedisKeys } from "./lib/redis"
 import { nanoid } from "nanoid"
 import { MAX_USERS_PER_ROOM, ERROR_CODES } from "./lib/constants"
 
@@ -12,7 +12,7 @@ export const proxy = async (req: NextRequest) => {
   const roomId = roomMatch[1]
 
   const meta = await redis.hgetall<{ connected: string[]; createdAt: number }>(
-    `meta:${roomId}`
+    RedisKeys.roomMeta(roomId)
   )
 
   if (!meta) {
@@ -42,7 +42,7 @@ export const proxy = async (req: NextRequest) => {
     sameSite: "strict",
   })
 
-  await redis.hset(`meta:${roomId}`, {
+  await redis.hset(RedisKeys.roomMeta(roomId), {
     connected: [...meta.connected, token],
   })
 

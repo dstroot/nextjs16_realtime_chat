@@ -1,3 +1,34 @@
+// Converts a Uint8Array to a hexadecimal string
+const byteArrayToHex = (bytes: Uint8Array): string => {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+// Converts a hexadecimal string to a Uint8Array
+const hexToByteArray = (hex: string): Uint8Array => {
+  const bytes = hex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16));
+  if (!bytes) throw new Error("Invalid hex string");
+  return new Uint8Array(bytes);
+};
+
+// Validates an encryption key
+export const validateEncryptionKey = (
+  key: string | null
+): { valid: boolean; error?: string } => {
+  if (!key) {
+    return { valid: false, error: "Missing encryption key" };
+  }
+  if (key.length !== 64) {
+    return { valid: false, error: "Invalid encryption key format" };
+  }
+  // Check if it's a valid hex string
+  if (!/^[0-9a-fA-F]{64}$/.test(key)) {
+    return { valid: false, error: "Invalid encryption key format" };
+  }
+  return { valid: true };
+};
+
 // Generates a random 256-bit key for zero-knowledge client-side encryption.
 // This key is used to encrypt/decrypt messages locally and is never sent to the server,
 // ensuring that even the server owner cannot read the chats.
@@ -5,25 +36,22 @@ export const generateKey = (): string => {
   if (typeof window === "undefined") return "";
   const arr = new Uint8Array(32); // 256 bits
   window.crypto.getRandomValues(arr);
-  return Array.from(arr)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return byteArrayToHex(arr);
 };
 
 // Converts a hexadecimal string to a CryptoKey for AES-GCM encryption.
 // This function is used to convert the generated key into a format that can
 // be used by the Web Crypto API.
 const getCryptoKey = async (keyHex: string): Promise<CryptoKey | null> => {
-  if (!keyHex || keyHex.length !== 64) {
+  const validation = validateEncryptionKey(keyHex);
+  if (!validation.valid) {
     return null;
   }
   try {
-    const keyBytes = keyHex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16));
-    if (!keyBytes) return null;
-    const keyBuffer = new Uint8Array(keyBytes);
+    const keyBuffer = hexToByteArray(keyHex);
     return await window.crypto.subtle?.importKey(
       "raw",
-      keyBuffer,
+      keyBuffer as BufferSource,
       { name: "AES-GCM" },
       false,
       ["encrypt", "decrypt"]
@@ -52,13 +80,8 @@ export const encrypt = async (
     encoded
   );
 
-  const ivHex = Array.from(iv)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  const encryptedHex = Array.from(new Uint8Array(encrypted))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  const ivHex = byteArrayToHex(iv);
+  const encryptedHex = byteArrayToHex(new Uint8Array(encrypted));
 
   return `${ivHex}:${encryptedHex}`;
 };
@@ -76,17 +99,13 @@ export const decrypt = async (
     const key = await getCryptoKey(keyHex);
     if (!key) return null;
 
-    const iv = new Uint8Array(
-      ivHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
-    );
-    const data = new Uint8Array(
-      dataHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
-    );
+    const iv = hexToByteArray(ivHex);
+    const data = hexToByteArray(dataHex);
 
     const decrypted = await window.crypto.subtle?.decrypt(
-      { name: "AES-GCM", iv },
+      { name: "AES-GCM", iv: iv as BufferSource },
       key,
-      data
+      data as BufferSource
     );
 
     if (!decrypted) return null;
