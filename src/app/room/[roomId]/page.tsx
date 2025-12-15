@@ -121,7 +121,7 @@ const Page = () => {
     setTimeout(() => setCopyStatus("idle"), 1500);
   }, []);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages fill scroll area
   useLayoutEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -171,9 +171,6 @@ const Page = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden md:block">
-            <ModeToggle />
-          </div>
           <Button
             variant="destructive"
             size="default"
@@ -182,8 +179,15 @@ const Page = () => {
             className="font-bold"
           >
             <Bomb className="size-4" />
-            {/* {isDestroying ? "DESTROYING..." : "DESTROY ROOM"} */}
+            {isDestroying ? (
+              <span className="hidden sm:block">DESTROYING...</span>
+            ) : (
+              <span className="hidden sm:block">DESTROY ROOM</span>
+            )}
           </Button>
+          <div className="hidden sm:block">
+            <ModeToggle />
+          </div>
         </div>
       </header>
 
