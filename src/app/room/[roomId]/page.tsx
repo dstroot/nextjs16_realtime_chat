@@ -11,7 +11,7 @@ import { useRealtime } from "@/lib/realtime-client";
 // third-party
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { Copy, Check, Bomb } from "lucide-react";
 
 // components
@@ -26,12 +26,10 @@ const Page = () => {
   const params = useParams();
   const roomId = params.roomId as string;
   const router = useRouter();
-
   const { username } = useUsername();
-  const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const [input, setInput] = useState("");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
   // Fetch initial TTL
@@ -62,11 +60,6 @@ const Page = () => {
       return res.data;
     },
   });
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   // Send message mutation
   const { mutate: sendMessage, isPending } = useMutation({
@@ -127,6 +120,11 @@ const Page = () => {
     // toast.success("Link copied to clipboard");
     setTimeout(() => setCopyStatus("idle"), 1500);
   }, []);
+
+  // Auto-scroll to bottom when messages change
+  useLayoutEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <main className="flex flex-col h-dvh max-h-dvh">
@@ -211,8 +209,8 @@ const Page = () => {
               currentUsername={username}
             />
           ))}
-          <div ref={messagesEndRef} />
         </div>
+        <div ref={messagesEndRef} />
         <ScrollBar />
       </ScrollArea>
 
