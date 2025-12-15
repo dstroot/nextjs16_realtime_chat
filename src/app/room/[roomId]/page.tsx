@@ -1,16 +1,23 @@
 "use client";
 
+// hooks
 import { useUsername } from "@/hooks/use-username";
 import { useCountdown } from "@/hooks/use-countdown";
+
+// libs
 import { client } from "@/lib/client";
 import { useRealtime } from "@/lib/realtime-client";
+
+// third-party
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Copy, Check, Bomb } from "lucide-react";
+
+// components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Copy, Check, Bomb } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatMessage } from "@/components/chat-message";
 import { toast } from "sonner";
@@ -23,6 +30,7 @@ const Page = () => {
   const { username } = useUsername();
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
@@ -40,6 +48,7 @@ const Page = () => {
     router.push("/?destroyed=true");
   }, [router]);
 
+  // Display countdown
   const { formatted: timeFormatted, isUrgent } = useCountdown({
     initialSeconds: ttlData?.ttl ?? null,
     onComplete: handleCountdownComplete,
@@ -53,6 +62,11 @@ const Page = () => {
       return res.data;
     },
   });
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Send message mutation
   const { mutate: sendMessage, isPending } = useMutation({
@@ -115,7 +129,7 @@ const Page = () => {
   }, []);
 
   return (
-    <main className="flex flex-col h-screen max-h-screen">
+    <main className="flex flex-col h-dvh max-h-dvh">
       {/* Header */}
       <header className="border-b border-border p-4 flex items-center justify-between bg-card/50">
         <div className="flex items-center gap-4">
@@ -176,7 +190,7 @@ const Page = () => {
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 h-2/3 overflow-hidden">
+      <ScrollArea className="flex-1 grow overflow-hidden">
         <div className="p-4 space-y-4">
           {messages?.messages.length === 0 && (
             <div className="flex items-center justify-center h-[calc(100vh-200px)]">
@@ -197,6 +211,7 @@ const Page = () => {
               currentUsername={username}
             />
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <ScrollBar />
       </ScrollArea>
