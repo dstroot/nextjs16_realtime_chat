@@ -16,8 +16,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ErrorAlert } from "@/components/error-alert";
 import { ERROR_CODES, type ErrorCode } from "@/lib/constants";
-// import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
 
 const Page = () => {
   return (
@@ -69,9 +67,7 @@ function Lobby() {
       }
     },
     onError: (error) => {
-      toast.error("Failed to create room", {
-        description: error.message || "Please try again later.",
-      });
+      console.log(error.message || "Please try again later.");
     },
   });
 
@@ -87,16 +83,15 @@ function Lobby() {
         <Card className="border-border bg-card/50 backdrop-blur-md">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl mb-2 font-bold tracking-tight text-green-500">
-              {">"}private_chat
+              {">private_chat"}
             </CardTitle>
             <CardDescription className="mb-4">
-              A private, self-destructing chat room. Nothing is retained after
-              you leave. No accounts, no logs. No personal identifiable
+              Create a private, self-destructing chat room. Nothing is retained
+              after you leave. No accounts, no logs. No personal identifiable
               information of any type is ever collected. Rooms self-destruct
               after 10 minutes.
             </CardDescription>
           </CardHeader>
-
           <CardContent className="space-y-5">
             <Button
               onClick={() => createRoom()}

@@ -1,6 +1,6 @@
 "use client";
 
-// import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,15 @@ import {
 
 export function ModeToggle() {
   const { setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // if not mounted return a placeholder to avoid CLS
+  if (!mounted) return <div className="h-8 w-8"> </div>;
 
   return (
     <DropdownMenu>

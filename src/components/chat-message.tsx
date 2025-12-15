@@ -1,14 +1,12 @@
-"use client"
-
-import { format } from "date-fns"
-import { memo } from "react"
+import { format } from "date-fns";
+import { memo } from "react";
 
 interface ChatMessageProps {
-  id: string
-  sender: string
-  text: string
-  timestamp: number
-  currentUsername: string
+  id: string;
+  sender: string;
+  text: string;
+  timestamp: number;
+  currentUsername: string;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -17,7 +15,7 @@ export const ChatMessage = memo(function ChatMessage({
   timestamp,
   currentUsername,
 }: ChatMessageProps) {
-  const isOwnMessage = sender === currentUsername
+  const isOwnMessage = sender === currentUsername;
 
   return (
     <div className="flex flex-col items-start">
@@ -36,9 +34,10 @@ export const ChatMessage = memo(function ChatMessage({
           </span>
         </div>
 
-        <p className="text-sm text-foreground leading-relaxed break-all">{text}</p>
+        <p className="text-sm text-foreground leading-relaxed break-all">
+          {text}
+        </p>
       </div>
     </div>
-  )
-})
-
+  );
+});
