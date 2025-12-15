@@ -35,11 +35,12 @@ const Page = () => {
   );
   const { destroyRoom, isDestroying } = useRoomDestruction(roomId);
 
-  // Countdown hook
+  // Countdown completed
   const handleCountdownComplete = useCallback(() => {
     router.push("/?destroyed=true");
   }, [router]);
 
+  // Countdown timer
   const { formatted: timeFormatted, isUrgent } = useCountdown({
     initialSeconds: ttlData?.ttl ?? null,
     onComplete: handleCountdownComplete,
