@@ -43,8 +43,7 @@ export const messages = new Elysia({ prefix: "/messages" })
 
       // update TTLs
       await redis.expire(RedisKeys.roomMessages(roomId), remaining);
-      await redis.expire(RedisKeys.roomHistory(roomId), remaining);
-      await redis.expire(roomId, remaining); // stream
+      await redis.expire(RedisKeys.roomStream(roomId), remaining);
     },
     {
       query: z.object({ roomId: z.string() }),

@@ -38,9 +38,9 @@ export const rooms = new Elysia({ prefix: "/room" })
         .emit("chat.destroy", { isDestroyed: true });
 
       await Promise.all([
-        // redis.del(auth.roomId),
         redis.del(RedisKeys.roomMeta(auth.roomId)),
         redis.del(RedisKeys.roomMessages(auth.roomId)),
+        redis.del(RedisKeys.roomStream(auth.roomId)),
       ]);
     },
     { query: z.object({ roomId: z.string() }) }
