@@ -2,7 +2,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/client";
 import { encrypt } from "@/lib/encryption";
 import { useUsername } from "./use-username";
-import { toast } from "sonner";
 
 export function useMessages(roomId: string, encryptionKey: string | null) {
   const { username } = useUsername();
@@ -31,9 +30,8 @@ export function useMessages(roomId: string, encryptionKey: string | null) {
       refetch();
     },
     onError: (error) => {
-      toast.error("Failed to send message", {
-        description: error.message || "Please try again.",
-      });
+      // TODO: Add error handling
+      console.error(error);
     },
   });
 

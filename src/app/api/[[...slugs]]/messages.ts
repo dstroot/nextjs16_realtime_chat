@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
+// middleware
 import { authMiddleware } from "./auth";
 
 // lib

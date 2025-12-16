@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, Check, Bomb } from "lucide-react";
+
+// components
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { toast } from "sonner";
 
 interface ChatHeaderProps {
   roomId: string;
@@ -26,7 +27,6 @@ export function ChatHeader({
     const url = window.location.href;
     navigator.clipboard.writeText(url);
     setCopyStatus("copied");
-    toast.success("Link copied to clipboard");
 
     // Clear any existing timeout
     if (copyTimeoutRef.current) {
@@ -57,6 +57,7 @@ export function ChatHeader({
             Room ID
           </span>
           <div className="flex items-center gap-2">
+            {/* Room ID */}
             <span className="font-bold text-green-500 truncate">
               {roomId.slice(0, 10) + "..."}
             </span>
@@ -75,8 +76,10 @@ export function ChatHeader({
           </div>
         </div>
 
+        {/* Separator */}
         <div className="w-0.5 bg-muted-foreground h-8" />
 
+        {/* Self-Destruct In */}
         <div className="flex flex-col gap-1">
           <span className="text-xs text-muted-foreground uppercase tracking-wide">
             Self-Destruct In

@@ -1,7 +1,9 @@
 import { Elysia } from "elysia";
 import { nanoid } from "nanoid";
-import { authMiddleware } from "./auth";
 import { z } from "zod";
+
+// middleware
+import { authMiddleware } from "./auth";
 
 // lib
 import { redis, RedisKeys } from "@/lib/redis";
@@ -37,6 +39,7 @@ export const rooms = new Elysia({ prefix: "/room" })
         .channel(auth.roomId)
         .emit("chat.destroy", { isDestroyed: true });
 
+      // delete room meta, messages, and stream keys from redis 
       await Promise.all([
         redis.del(RedisKeys.roomMeta(auth.roomId)),
         redis.del(RedisKeys.roomMessages(auth.roomId)),

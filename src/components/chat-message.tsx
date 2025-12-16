@@ -1,5 +1,7 @@
 import { format } from "date-fns";
 import { memo } from "react";
+
+// hooks
 import { useDecryptedMessage } from "@/hooks/use-decrypted-message";
 
 interface ChatMessageProps {

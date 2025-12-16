@@ -1,4 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
+
+// components
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ChatMessage } from "@/components/chat-message";
 

@@ -3,7 +3,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useCallback } from "react";
-import { toast } from "sonner";
 
 // hooks
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
@@ -75,9 +74,8 @@ function Lobby() {
       }
     },
     onError: (error) => {
-      toast.error("Failed to create room", {
-        description: error.message || "Please try again later.",
-      });
+      setError(ERROR_CODES.ROOM_FAILED);
+      console.error(error);
     },
   });
 
@@ -106,7 +104,7 @@ function Lobby() {
           <CardContent className="space-y-5">
             <Button
               onClick={() => createRoom()}
-              disabled={isPending}
+              disabled={isPending||isSuccess}
               size="lg"
               variant="default"
               className="w-full font-bold"
