@@ -38,7 +38,7 @@ export const messages = new Elysia({ prefix: "/messages" })
       });
       await realtime.channel(roomId).emit("chat.message", message);
 
-      // housekeeping: refresh TTL on messages list to match room TTL
+      // housekeeping: refresh TTL on messages list and stream to match room TTL
       const remaining = await redis.ttl(RedisKeys.roomMeta(roomId));
 
       // update TTLs
