@@ -17,8 +17,8 @@ export const messages = new Elysia({ prefix: "/messages" })
       const { sender, text } = body;
       const { roomId } = auth;
 
+      // ensure room exists first
       const roomExists = await redis.exists(RedisKeys.roomMeta(roomId));
-
       if (!roomExists) {
         throw new Error("Room does not exist");
       }
@@ -40,7 +40,11 @@ export const messages = new Elysia({ prefix: "/messages" })
 
       // housekeeping: refresh TTL on messages list to match room TTL
       const remaining = await redis.ttl(RedisKeys.roomMeta(roomId));
+
+      // update TTLs
       await redis.expire(RedisKeys.roomMessages(roomId), remaining);
+      await redis.expire(RedisKeys.roomHistory(roomId), remaining);
+      await redis.expire(roomId, remaining); // stream
     },
     {
       query: z.object({ roomId: z.string() }),

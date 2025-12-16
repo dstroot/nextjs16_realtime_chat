@@ -5,6 +5,9 @@ All the credit goes to Josh!!
 - This project was forked from [Josh's Repo](https://github.com/joschan21/nextjs16_realtime_chat/pulls)
 - See Josh's most excellent [video](https://www.youtube.com/watch?v=D8CLV-MRH0k&t=2603s)!
 
+Middleware @ 1:18. https://youtu.be/D8CLV-MRH0k?t=4715
+Realtime @ 1:51  https://youtu.be/D8CLV-MRH0k?t=6719 
+
 ## Getting Started
 
 First, run the development server:

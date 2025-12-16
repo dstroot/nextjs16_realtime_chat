@@ -96,10 +96,11 @@ function Lobby() {
               {">private_chat"}
             </CardTitle>
             <CardDescription className="mb-4">
-              Create a private, self-destructing chat room. Messages are
-              encrypted end-to-end. Nothing is retained after you leave. No
-              accounts, no logs. No personal identifiable information of any
-              type is ever collected. Rooms self-destruct after 10 minutes.
+              Create a private, self-destructing chat room. No personal
+              identifiable information of any type is ever collected. Messages
+              are encrypted end-to-end. Nothing is retained after you leave. No
+              accounts, no identifying data in logs. Rooms self-destruct after
+              10 minutes or on demand.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">

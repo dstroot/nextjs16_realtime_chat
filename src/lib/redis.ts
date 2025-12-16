@@ -7,4 +7,5 @@ export const redis = Redis.fromEnv();
 export const RedisKeys = {
   roomMeta: (roomId: string) => `meta:${roomId}`,
   roomMessages: (roomId: string) => `messages:${roomId}`,
+  roomHistory: (roomId: string) => `history:${roomId}`,
 } as const;
