@@ -20,7 +20,7 @@ export const ERROR_CONFIG = {
   ROOM_NOT_FOUND: {
     code: "room-not-found",
     title: "ROOM NOT FOUND",
-    description: "This room may have expired or never existed.",
+    description: "If the room existed it may have expired.",
   },
   ROOM_FULL: {
     code: "room-full",
