@@ -30,7 +30,7 @@ export function ChatInput({
     <div className="p-4 border-t border-border bg-card/50">
       <div className="flex gap-3">
         <div className="flex-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary animate-pulse font-mono">
+          <span className="absolute font-bold left-3 top-1/2 -translate-y-1/2 text-primary animate-pulse font-mono">
             {">"}
           </span>
           <Input
