@@ -86,7 +86,7 @@ export function ChatHeader({
           </span>
           <span
             className={`text-sm font-bold ${
-              isUrgent ? "text-red-500" : "text-amber-500"
+              isUrgent ? "text-destructive" : "text-warning"
             }`}
           >
             {timeFormatted}
