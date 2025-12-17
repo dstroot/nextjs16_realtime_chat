@@ -3,6 +3,7 @@ packages: []
 minimumReleaseAgeExclude: []
 
 onlyBuiltDependencies:
+  - msw
   - sharp
   - unrs-resolver
 
@@ -11,4 +12,4 @@ trustPolicyExclude:
   - eslint-import-resolver-typescript@3.10.1
   - semver@6.3.1
   - shadcn@3.5.2
-  - "@babel/core@7.28.5"
+  - '@babel/core@7.28.5'

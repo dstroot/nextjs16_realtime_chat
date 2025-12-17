@@ -58,7 +58,7 @@ export function ChatHeader({
           </span>
           <div className="flex items-center gap-2">
             {/* Room ID */}
-            <span className="font-bold text-green-500 truncate">
+            <span className="font-bold text-primary truncate">
               {roomId.slice(0, 10) + "..."}
             </span>
             <Button
@@ -68,7 +68,7 @@ export function ChatHeader({
               className="h-6 w-6"
             >
               {copyStatus === "copied" ? (
-                <Check className="size-3 text-green-500" />
+                <Check className="size-3 text-primary" />
               ) : (
                 <Copy className="size-3" />
               )}

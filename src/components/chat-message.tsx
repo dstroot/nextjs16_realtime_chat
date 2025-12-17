@@ -32,7 +32,7 @@ export const ChatMessage = memo(function ChatMessage({
         <div className="flex items-baseline gap-3 mb-1">
           <span
             className={`text-xs font-bold ${
-              isOwnMessage ? "text-green-500" : "text-blue-500"
+              isOwnMessage ? "text-primary" : "text-blue-500"
             }`}
           >
             {isOwnMessage ? "YOU" : sender}
@@ -43,7 +43,7 @@ export const ChatMessage = memo(function ChatMessage({
           </span>
         </div>
 
-        <p className="text-sm text-foreground leading-relaxed wrap-break-word whitespace-pre-wrap">
+        <p className="text-foreground leading-relaxed wrap-break-word whitespace-pre-wrap">
           {decryptedMessage}
         </p>
       </div>

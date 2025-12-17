@@ -90,7 +90,7 @@ function Lobby() {
 
         <Card className="border-border bg-card/50 backdrop-blur-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl mb-2 font-bold tracking-tight text-green-500">
+            <CardTitle className="text-3xl mb-2 font-bold tracking-tight text-primary">
               {">private_chat"}
             </CardTitle>
             <CardDescription className="mb-4">
