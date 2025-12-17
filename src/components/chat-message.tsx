@@ -21,7 +21,10 @@ export const ChatMessage = memo(function ChatMessage({
   currentUsername,
 }: ChatMessageProps) {
   const isOwnMessage = sender === currentUsername;
-  const { message: decryptedMessage } = useDecryptedMessage(text, encryptionKey);
+  const { message: decryptedMessage } = useDecryptedMessage(
+    text,
+    encryptionKey
+  );
 
   return (
     <div className="flex flex-col items-start">
@@ -36,7 +39,7 @@ export const ChatMessage = memo(function ChatMessage({
           </span>
 
           <span className="text-[10px] text-muted-foreground">
-            {`SENT ${format(timestamp, "HH:mm:ss")}`}
+            {`@ ${format(timestamp, "HH:mm:ss")}`}
           </span>
         </div>
 

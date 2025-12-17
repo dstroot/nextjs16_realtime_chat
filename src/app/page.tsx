@@ -104,7 +104,7 @@ function Lobby() {
           <CardContent className="space-y-5">
             <Button
               onClick={() => createRoom()}
-              disabled={isPending||isSuccess}
+              disabled={isPending || isSuccess}
               size="lg"
               variant="default"
               className="w-full font-bold"
