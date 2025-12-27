@@ -3,6 +3,7 @@ packages: []
 minimumReleaseAgeExclude: []
 
 onlyBuiltDependencies:
+  - esbuild
   - msw
   - sharp
   - unrs-resolver
